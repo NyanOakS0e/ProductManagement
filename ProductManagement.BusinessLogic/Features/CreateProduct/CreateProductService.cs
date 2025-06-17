@@ -22,6 +22,7 @@ namespace ProductManagement.BusinessLogic.Features.CreateProduct
                 Name = request.Name,
                 Price = request.Price,
                 Description = request.Description,
+                CreatedAt = DateTime.UtcNow
             });
 
             return data;

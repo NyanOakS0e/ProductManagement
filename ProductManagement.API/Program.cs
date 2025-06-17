@@ -1,5 +1,7 @@
 
 using ProductManagement.BusinessLogic.Features.CreateProduct;
+using ProductManagement.BusinessLogic.Features.GetProduct;
+using ProductManagement.BusinessLogic.Features.UpdateProduct;
 
 namespace ProductManagement.API
 {
@@ -16,6 +18,9 @@ namespace ProductManagement.API
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
             builder.Services.AddScoped<CreateProductService>();
+            builder.Services.AddScoped<GetAllProductService>();
+            builder.Services.AddScoped<UpdateProductService>();
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
