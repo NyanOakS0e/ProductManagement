@@ -8,25 +8,50 @@ namespace ProductManagement.MVC.Controllers
     {
         private readonly ILogger<HomeController> _logger;
 
-        public HomeController(ILogger<HomeController> logger)
+        private readonly HttpClient _http;
+        public HomeController(ILogger<HomeController> logger, HttpClient http)
         {
             _logger = logger;
+            _http = http;
         }
 
-        public IActionResult Index()
+        [ActionName("Index")]
+        public async Task<IActionResult> IndexAsync()
         {
-            return View();
+            var respone = await _http.GetAsync("https://localhost:7297/api/Product");
+
+            if(respone.IsSuccessStatusCode)
+            {
+                var products = await respone.Content.ReadFromJsonAsync<GetProductResponseModel>();
+
+                return View(products.products);
+            }
+            else
+            {
+                ModelState.AddModelError("", "Failed to load products");
+            }
+            return View("Index");
         }
 
-        public IActionResult Privacy()
+
+        [HttpPost]
+        public async Task<IActionResult> Delete([FromBody]int id)
         {
-            return View();
+
+            var content = JsonContent.Create(new { ProductId = id });
+            var response = await _http.PostAsync($"https://localhost:7297/api/Product/Delete", content);
+            if (response.IsSuccessStatusCode)
+            {
+                TempData["IsSuccess"] = true;
+                TempData["Message"] = "Delete successful";
+
+                return RedirectToAction("Index");
+            }
+
+            return StatusCode((int)response.StatusCode, "Failed to delete.");
         }
 
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-        }
+
+
     }
 }

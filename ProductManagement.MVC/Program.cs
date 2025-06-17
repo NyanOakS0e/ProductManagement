@@ -9,6 +9,10 @@ namespace ProductManagement.MVC
             // Add services to the container.
             builder.Services.AddControllersWithViews();
 
+            builder.Services.AddHttpClient("ProductManagementAPI", client =>
+            {
+                client.BaseAddress = new Uri("https://localhost:7297/api/");
+            });
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -23,7 +27,7 @@ namespace ProductManagement.MVC
             app.UseStaticFiles();
 
             app.UseRouting();
-
+           
             app.UseAuthorization();
 
             app.MapControllerRoute(

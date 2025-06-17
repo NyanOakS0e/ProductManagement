@@ -2,7 +2,81 @@
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+@model List<ProductModel>
+
+
+<a class="btn btn-outline-primary">Add Product</a>
+
+<div id="alertDiv">
+    @* @{
+        bool isSuccess = Convert.ToBoolean(TempData["IsSuccess"] ?? false);
+        string message = Convert.ToString(TempData["Message"] ?? string.Empty);
+    }
+    @if (!string.IsNullOrEmpty(message))
+    {
+        <div id="divAlert" class="alert alert-@(isSuccess ? "success" : "danger")" role="alert">
+            @message
+        </div>
+    } *@
 </div>
+
+<table class="table table-hover table-striped">
+    <thead>
+        <tr>
+            <th scope="col">Action</th>
+            <th scope="col">No.</th>
+            <th scope="col">Product Name</th>
+            <th scope="col">Description</th>
+            <th scope="col">Price</th>
+            <th scope="col">Created Date</th>
+        </tr>
+    </thead>
+    <tbody>
+        @{
+            int count = 0;
+        }
+        
+        @foreach (var product in Model)
+            
+        {
+
+            <tr>
+                <td>
+                    <a class="btn btn-outline-primary" id="@product.ProductId">Edit</a>
+                    <a class="btn btn-outline-danger" id="@product.ProductId" onclick="deleteProduct(@product.ProductId)">Delete</a>
+                </td>
+                <td>@(++count)</td>
+                <td>@product.Name</td>
+                <td>@product.Description</td>
+                <td>@product.Price?.ToString("n0")</td>
+                <td>@product.CreatedAt.Date</td>
+            </tr>
+        }
+
+    </tbody>
+</table>
+
+
+<script>
+    async function deleteProduct(id) {
+        if (confirm("Are you sure you want to delete this product?")) {
+            const response = await fetch(`/home/delete/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(id)
+            });
+
+            if (response.ok) {
+
+               location.reload();
+
+                
+
+            } else {
+                alert("Failed to delete product.");
+            }
+        }
+    }
+</script>

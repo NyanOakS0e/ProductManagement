@@ -1,5 +1,6 @@
 
 using ProductManagement.BusinessLogic.Features.CreateProduct;
+using ProductManagement.BusinessLogic.Features.DeleteProduct;
 using ProductManagement.BusinessLogic.Features.GetProduct;
 using ProductManagement.BusinessLogic.Features.UpdateProduct;
 
@@ -20,6 +21,7 @@ namespace ProductManagement.API
             builder.Services.AddScoped<CreateProductService>();
             builder.Services.AddScoped<GetAllProductService>();
             builder.Services.AddScoped<UpdateProductService>();
+            builder.Services.AddScoped<DeleteProductService>();
 
             var app = builder.Build();
 

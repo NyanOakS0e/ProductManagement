@@ -2,8 +2,10 @@
 using Microsoft.AspNetCore.Mvc;
 using ProductManagement.BusinessLogic.Features;
 using ProductManagement.BusinessLogic.Features.CreateProduct;
+using ProductManagement.BusinessLogic.Features.DeleteProduct;
 using ProductManagement.BusinessLogic.Features.GetProduct;
 using ProductManagement.BusinessLogic.Features.UpdateProduct;
+using ProductManagement.BusinessLogic.Shared;
 
 namespace ProductManagement.API.Controllers
 {
@@ -16,11 +18,13 @@ namespace ProductManagement.API.Controllers
         private readonly CreateProductService createProductService;
         private readonly GetAllProductService _getAllProductService;
         private readonly UpdateProductService _updateProductService;
-        public ProductController(CreateProductService createProductService, GetAllProductService getAllProductService, UpdateProductService updateProductService)
+        private readonly DeleteProductService _deleteProductService;
+        public ProductController(CreateProductService createProductService, GetAllProductService getAllProductService, UpdateProductService updateProductService, DeleteProductService deleteProductService)
         {
             this.createProductService = createProductService;
             _getAllProductService = getAllProductService;
             _updateProductService = updateProductService;
+            _deleteProductService = deleteProductService;
         }
 
         #region Create Product
@@ -140,7 +144,47 @@ namespace ProductManagement.API.Controllers
             }
 
 
-            #endregion
+
         }
+        #endregion
+
+
+        #region Delete Product
+        [HttpPost]
+        [Route("Delete")]
+
+        public async Task<IActionResult> DeleteProductAsync([FromBody] DeleteProductRequestModel reqModel)
+        {
+
+        
+
+            try
+            {
+                var result = await _deleteProductService.DeleteProductAsync(reqModel);
+
+                if (result <= 0)
+                {
+                    return BadRequest(new DeleteProductResponseModel
+                    {
+                        Message = "Failed to delete product",
+                        ResponseCode = "400",
+                    });
+                }
+
+                return Ok(new DeleteProductResponseModel
+                {
+                    Message = "Product delete successful",
+                    ResponseCode = "200",
+                });
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"An error occurred: {ex.ToString()}");
+            }
+           
+
+        }
+        #endregion
     }
 }
