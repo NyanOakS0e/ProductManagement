@@ -5,19 +5,32 @@
 @model List<ProductModel>
 
 
-<a class="btn btn-outline-primary">Add Product</a>
+@* <a class="btn btn-outline-primary">Add Product</a> *@
 
-<div id="alertDiv">
-    @* @{
-        bool isSuccess = Convert.ToBoolean(TempData["IsSuccess"] ?? false);
-        string message = Convert.ToString(TempData["Message"] ?? string.Empty);
-    }
-    @if (!string.IsNullOrEmpty(message))
-    {
-        <div id="divAlert" class="alert alert-@(isSuccess ? "success" : "danger")" role="alert">
-            @message
+<!-- Button trigger modal -->
+<button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+    Add Product
+</button>
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">Add Product</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+               <input type="text" placeholder="Name" class="form-control mb-5" id="add-name" />
+                <input type="text" placeholder="Description" class="form-control mb-5" id="add-des" />
+                <input type="number" placeholder="Price" class="form-control mb-5"  id="add-price"/>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">cancel</button>
+                <button type="button" class="btn btn-success" onclick="addProduct()">Add Product</button>
+            </div>
         </div>
-    } *@
+    </div>
 </div>
 
 <table class="table table-hover table-striped">
@@ -41,14 +54,14 @@
         {
 
             <tr>
-                <td>
-                    <a class="btn btn-outline-primary" id="@product.ProductId">Edit</a>
+                <td id="action-@product.ProductId">
+                    <a class="btn btn-outline-primary" id="@product.ProductId" onclick="editRow(@product.ProductId)">Edit</a>
                     <a class="btn btn-outline-danger" id="@product.ProductId" onclick="deleteProduct(@product.ProductId)">Delete</a>
                 </td>
                 <td>@(++count)</td>
-                <td>@product.Name</td>
-                <td>@product.Description</td>
-                <td>@product.Price?.ToString("n0")</td>
+                <td id="name-@product.ProductId" data-original="@product.Name">@product.Name</td>
+                <td id="des-@product.ProductId" data-original="@product.Description">@product.Description</td>
+                <td id="price-@product.ProductId" data-original="@product.Price?.ToString("n0")">@product.Price?.ToString("n0")</td>
                 <td>@product.CreatedAt.Date</td>
             </tr>
         }
@@ -72,11 +85,118 @@
 
                location.reload();
 
-                
-
             } else {
                 alert("Failed to delete product.");
             }
         }
     }
+
+
+    async function editRow(id)
+    {
+        const name = document.getElementById(`name-${id}`)
+        const description = document.getElementById(`des-${id}`)
+        const price = document.getElementById(`price-${id}`)
+        const action = document.getElementById(`action-${id}`)
+
+        const currentName = name.innerText.trim()
+        const currentDescription = description.innerText.trim()
+        const currentPrice = price.innerText.replace(/,/g, '').trim()
+
+        name.innerHTML = `<input type="text" class="form-control" type="text" id="input-name-${id}" value="${currentName}" />`;
+        description.innerHTML = `<input type="text" class="form-control" type="text" id="input-des-${id}" value="${currentDescription}" />`;
+        price.innerHTML = `<input type="number" class="form-control" id="input-price-${id}" value="${currentPrice}" />`;
+
+
+        name.setAttribute("data-original", currentName);
+        description.setAttribute("data-original", currentDescription);
+        price.setAttribute("data-original", currentPrice);
+
+        action.innerHTML = `
+            <button class="btn btn-outline-success" onclick="saveRow(${id})">Save</button>
+            <button class="btn btn-outline-secondary" onclick="cancelEdit(${id})">Cancel</button>
+        `;
+    }
+
+
+        function cancelEdit(id) {
+        const nameCell = document.getElementById(`name-${id}`);
+        const descCell = document.getElementById(`des-${id}`);
+        const priceCell = document.getElementById(`price-${id}`);
+        const action = document.getElementById(`action-${id}`)
+
+
+        // Restore original values
+        nameCell.innerText = nameCell.getAttribute("data-original");
+        descCell.innerText = descCell.getAttribute("data-original");
+        priceCell.innerText = parseFloat(priceCell.getAttribute("data-original")).toLocaleString();
+
+        // Restore action buttons
+        action.innerHTML = `
+            <a class="btn btn-outline-primary" onclick="editRow(${id})">Edit</a>
+            <a class="btn btn-outline-danger" onclick="deleteProduct(${id})">Delete</a>
+        `;
+    }
+
+
+
+    async function saveRow(id)
+    {
+        const name = document.getElementById(`input-name-${id}`).value;
+        const description = document.getElementById(`input-des-${id}`).value;
+        const price = parseFloat(document.getElementById(`input-price-${id}`).value);
+
+
+        const product = {
+            productId: id,
+            name: name,
+            description: description,
+            price: price,
+            updatedAt: new Date().toISOString()
+        };
+        
+        const response = await fetch(`/home/update`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(product)
+        });
+
+        if (response.ok) {
+            location.reload(); 
+        } else {
+            alert("Failed to update product.");
+        }
+    }
+
+
+    async function addProduct()
+    {
+        const name = document.getElementById("add-name").value
+        const description = document.getElementById("add-des").value
+        const price = document.getElementById("add-price").value
+
+        const addProduct = {
+            name: name,
+            description: description,
+            price: price,
+            createdAt: new Date().toISOString()
+        }
+
+        const response = await fetch(`/home/create`, {
+            method: "POST",
+            headers :{
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(addProduct)
+        });
+
+         if (response.ok) {
+            location.reload();
+        } else {
+            alert("Failed to add product.");
+        }
+    }
+
 </script>
