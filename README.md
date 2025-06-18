@@ -17,3 +17,17 @@ the columns of the "Tbl_Products" are
 
 > the project structure consists of two layers which are MVC as a presentation layer, Business Logic layer + Data access Layer(services).
 
+Instead of using the normal MVC, I used a API to fetch the data from the front end. By doing so, the front end can be 
+used different technologies such as blazor ot react. Whatever the front end technology is, it can consume the API.
+
+## Technologies Used
+
+- ASP.NET Core MVC
+- Dapper
+- MSSQL server
+- Notiflix
+- Bootstrap
+- ASP.NET Core Web API
+
+- 
+
